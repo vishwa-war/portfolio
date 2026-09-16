@@ -1,0 +1,140 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Nav from "@/components/nav.astro";
+import Footer from "@/components/footer.astro";
+---
+<Layout title="Writeups">
+  <Nav />
+  <main class="max-w-5xl mx-auto pt-28 md:pt-36 pb-20">
+    <header class="mb-10">
+      <p class="eyebrow">Technical notes</p>
+      <h1 class="text-5xl md:text-7xl font-semibold leading-none mb-5">Writeups</h1>
+      <p class="lead">A single reading experience for my cybersecurity learning records — CTFs, Linux practice and web-security investigations. The repository navigation is intentionally omitted; the writeup content lives directly on this page.</p>
+    </header>
+
+    <div class="writeup-tabs" role="tablist" aria-label="Writeups">
+      <button class="tab active" data-tab="tcq">TCQ 2026</button>
+      <button class="tab" data-tab="asterion">Asterion Group</button>
+      <button class="tab" data-tab="spectral">Spectral Override</button>
+      <button class="tab" data-tab="bandit">OverTheWire Bandit</button>
+    </div>
+
+    <div id="status" class="status">Loading the complete writeup content…</div>
+    <section id="writeup-tcq" class="writeup-panel active"></section>
+    <section id="writeup-asterion" class="writeup-panel"></section>
+    <section id="writeup-spectral" class="writeup-panel"></section>
+    <section id="writeup-bandit" class="writeup-panel"></section>
+  </main>
+  <Footer />
+</Layout>
+
+<script is:inline>
+  const sources = {
+    tcq: "https://raw.githubusercontent.com/vishwa-war/IATCQ-2026-writeup/main/README.md",
+    asterion: "https://raw.githubusercontent.com/vishwa-war/IATCQ-2026-writeup/main/asterion-group-writeup.md",
+    spectral: "https://raw.githubusercontent.com/vishwa-war/IATCQ-2026-writeup/main/spectral-override-writeup.md",
+    bandit: "https://raw.githubusercontent.com/vishwa-war/overthewire-bandit-writeup/main/README.md"
+  };
+
+  const escapeHtml = (value) => value.replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+  const inline = (value) => escapeHtml(value)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1 ↗</a>');
+
+  function renderMarkdown(md) {
+    const lines = md.replace(/\r/g, "").split("\n");
+    let html = "", i = 0, inList = false, listType = "", inCode = false, code = "", codeLang = "";
+    const closeList = () => { if (inList) { html += `</${listType}>`; inList = false; } };
+    while (i < lines.length) {
+      const line = lines[i];
+      if (line.startsWith("```")) {
+        if (!inCode) { closeList(); inCode = true; code = ""; codeLang = line.slice(3).trim(); }
+        else { html += `<pre><code class="lang-${escapeHtml(codeLang)}">${escapeHtml(code.replace(/\n$/, ""))}</code></pre>`; inCode = false; }
+        i++; continue;
+      }
+      if (inCode) { code += line + "\n"; i++; continue; }
+      if (!line.trim()) { closeList(); i++; continue; }
+      if (/^---+$/.test(line.trim())) { closeList(); html += "<hr>"; i++; continue; }
+      const heading = line.match(/^(#{1,4})\s+(.*)$/);
+      if (heading) { closeList(); const level = heading[1].length; html += `<h${level}>${inline(heading[2])}</h${level}>`; i++; continue; }
+      if (/^>\s?/.test(line)) { closeList(); html += `<blockquote>${inline(line.replace(/^>\s?/, ""))}</blockquote>`; i++; continue; }
+      const bullet = line.match(/^\s*[-*]\s+(.*)$/);
+      const numbered = line.match(/^\s*\d+\.\s+(.*)$/);
+      if (bullet || numbered) {
+        const type = numbered ? "ol" : "ul";
+        if (!inList || listType !== type) { closeList(); listType = type; html += `<${type}>`; inList = true; }
+        html += `<li>${inline((bullet || numbered)[1])}</li>`; i++; continue;
+      }
+      if (line.includes("|") && i + 1 < lines.length && /^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)+\|?\s*$/.test(lines[i+1])) {
+        closeList();
+        const parseRow = (r) => r.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map(c => c.trim());
+        const headers = parseRow(line); i += 2; let rows = "";
+        while (i < lines.length && lines[i].includes("|")) { rows += `<tr>${parseRow(lines[i]).map(c => `<td>${inline(c)}</td>`).join("")}</tr>`; i++; }
+        html += `<div class="table-wrap"><table><thead><tr>${headers.map(c => `<th>${inline(c)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>`; continue;
+      }
+      closeList();
+      html += `<p>${inline(line)}</p>`;
+      i++;
+    }
+    closeList();
+    return html;
+  }
+
+  async function loadAll() {
+    const status = document.getElementById("status");
+    try {
+      await Promise.all(Object.entries(sources).map(async ([key, url]) => {
+        const response = await fetch(url, { cache: "no-store" });
+        if (!response.ok) throw new Error(`Unable to load ${key}`);
+        document.getElementById(`writeup-${key}`).innerHTML = `<article class="markdown">${renderMarkdown(await response.text())}</article>`;
+      }));
+      status.textContent = "Complete writeup content loaded.";
+      status.classList.add("ready");
+    } catch (error) {
+      status.textContent = "The writeups could not be loaded right now. Please refresh when you have an internet connection.";
+      status.classList.add("error");
+    }
+  }
+
+  document.querySelectorAll(".tab").forEach((button) => button.addEventListener("click", () => {
+    const key = button.dataset.tab;
+    document.querySelectorAll(".tab").forEach((b) => b.classList.toggle("active", b === button));
+    document.querySelectorAll(".writeup-panel").forEach((panel) => panel.classList.toggle("active", panel.id === `writeup-${key}`));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }));
+  loadAll();
+</script>
+
+<style is:global>
+  .eyebrow { color:var(--sec); font-size:.8rem; letter-spacing:.16em; text-transform:uppercase; margin-bottom:.7rem; }
+  .lead { max-width:800px; color:var(--white-icon); line-height:1.8; font-size:1rem; }
+  .writeup-tabs { display:flex; flex-wrap:wrap; gap:8px; margin:28px 0 18px; position:sticky; top:10px; z-index:40; padding:8px; border:1px solid #ffffff10; border-radius:18px; background:#111111e8; backdrop-filter:blur(18px); }
+  .tab { border:1px solid transparent; color:var(--white-icon); background:transparent; padding:.7rem .9rem; border-radius:12px; cursor:pointer; font:inherit; font-size:.85rem; }
+  .tab:hover,.tab.active { color:white; background:#ffffff0b; border-color:#ffffff12; }
+  .status { color:var(--white-icon); border:1px solid #ffffff10; background:#1414149c; padding:12px 15px; border-radius:14px; margin-bottom:18px; font-size:.85rem; }
+  .status.ready { color:#cdb8ff; } .status.error { color:#ffb0b0; }
+  .writeup-panel { display:none; } .writeup-panel.active { display:block; }
+  .markdown { border:1px solid #ffffff10; background:#121212; border-radius:24px; padding:clamp(20px,4vw,44px); overflow:hidden; }
+  .markdown h1 { font-size:clamp(2rem,5vw,3.6rem); line-height:1.05; margin:0 0 1.5rem; font-weight:650; }
+  .markdown h2 { font-size:clamp(1.45rem,3vw,2rem); margin:2.4rem 0 .9rem; padding-top:1rem; border-top:1px solid #ffffff0d; }
+  .markdown h3 { font-size:1.15rem; margin:1.8rem 0 .7rem; color:#eee; }
+  .markdown h4 { font-size:1rem; margin:1.3rem 0 .5rem; }
+  .markdown p,.markdown li { color:#c7c7c7; line-height:1.78; font-size:.95rem; }
+  .markdown p { margin:.75rem 0; }
+  .markdown ul,.markdown ol { padding-left:1.4rem; margin:.75rem 0 1rem; }
+  .markdown li { margin:.35rem 0; }
+  .markdown strong { color:#f0f0f0; font-weight:650; }
+  .markdown em { color:#ddd; }
+  .markdown a { color:#c5a9ff; text-decoration:underline; text-underline-offset:3px; }
+  .markdown code { color:#e4d8ff; background:#1c1724; border:1px solid #ffffff0b; border-radius:6px; padding:.1rem .35rem; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.86em; }
+  .markdown pre { overflow:auto; background:#0b0b0b; border:1px solid #ffffff0d; border-radius:14px; padding:18px; margin:1rem 0 1.25rem; }
+  .markdown pre code { border:0; background:transparent; padding:0; color:#d8d8d8; white-space:pre; }
+  .markdown blockquote { border-left:3px solid var(--sec); padding:.65rem 1rem; margin:1rem 0; background:#17131d; color:#d2c6e8; }
+  .markdown hr { border:0; border-top:1px solid #ffffff10; margin:2rem 0; }
+  .table-wrap { overflow:auto; margin:1rem 0 1.25rem; }
+  .markdown table { width:100%; min-width:560px; border-collapse:collapse; }
+  .markdown th,.markdown td { text-align:left; padding:11px 12px; border:1px solid #ffffff0d; color:#c7c7c7; vertical-align:top; }
+  .markdown th { color:#f0f0f0; background:#181818; }
+</style>
