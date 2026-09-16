@@ -1,0 +1,60 @@
+---
+import LetterGlitch from "../React/LetterGlitch.tsx";
+import LogoWall from "../components/logoWall.astro";
+---
+<section class="text-[var(--white)] mt-12 md:mt-0" id="home">
+  <div class="max-w-5xl mx-auto space-y-10 md:py-36 pb-16">
+    <div class="text-left space-y-5">
+      <p class="text-md md:text-lg text-[var(--white-icon)] shiny-white">Hi, I'm Vishwa Erroju</p>
+      <div class="grid lg:grid-cols-[1.1fr_.9fr] gap-8 items-end">
+        <h1 class="text-[var(--white)] text-5xl md:text-7xl font-semibold text-pretty leading-[.92]">
+          Cybersecurity<br />Enthusiast
+        </h1>
+        <p class="text-md md:text-xl leading-relaxed text-[var(--white-icon)]">
+          Ethical hacking, network security, threat analysis and hands-on security research — learning by building, breaking and documenting.
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-3 pt-2">
+        <a target="_blank" rel="noreferrer" href="https://github.com/vishwa-war" class="pill">GitHub ↗</a>
+        <a href="/writeups" class="pill">Read writeups →</a>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-3">
+      <div class="stat"><strong>4</strong><span>Public repositories</span></div>
+      <div class="stat"><strong>33</strong><span>Bandit levels completed</span></div>
+      <div class="stat"><strong>2026</strong><span>TCQ bug-hunting work</span></div>
+    </div>
+
+    <LogoWall />
+
+    <div class="grid lg:grid-cols-[1fr_290px] gap-10 items-center">
+      <div>
+        <p class="eyebrow">Focus</p>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-5">Offensive security with a builder's mindset.</h2>
+        <div class="grid sm:grid-cols-2 gap-3">
+          {[
+            ["Web Security", "Vulnerability discovery, exploitation and attack-chain analysis."],
+            ["Network Security", "Port scanning, service enumeration and traffic-focused investigation."],
+            ["Linux & Shell", "Command-line fluency, permissions, SSH, cron and restricted shells."],
+            ["Security Research", "CTFs, CEH labs, technical documentation and responsible testing."],
+          ].map(([title, desc]) => (
+            <article class="focus-card"><h3>{title}</h3><p>{desc}</p></article>
+          ))}
+        </div>
+      </div>
+      <div class="flex justify-center">
+        <LetterGlitch client:load glitchColors={["#5e4491", "#A476FF", "#241a38"]} glitchSpeed={33} centerVignette={false} outerVignette={true} smooth={true} />
+      </div>
+    </div>
+  </div>
+</section>
+<style is:global>
+  .pill { display:inline-flex; align-items:center; padding:.8rem 1.15rem; border:1px solid var(--white-icon-tr); border-radius:999px; background:#1414149c; color:var(--white-icon); transition:.25s; }
+  .pill:hover { color:white; border-color:#ffffff25; transform:translateY(-2px); }
+  .stat,.focus-card { border:1px solid #ffffff10; background:#1414149c; border-radius:18px; padding:18px; }
+  .stat strong { display:block; font-size:2rem; color:var(--white); }
+  .stat span,.focus-card p { color:var(--white-icon); font-size:.9rem; }
+  .focus-card h3 { font-weight:600; margin-bottom:.35rem; }
+  .eyebrow { color:var(--sec); font-size:.8rem; letter-spacing:.16em; text-transform:uppercase; margin-bottom:.6rem; }
+</style>

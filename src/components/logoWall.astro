@@ -1,0 +1,12 @@
+---
+const technologies = ["Python", "Linux", "Bash", "Git", "SSH", "Nmap", "Burp Suite", "OpenSSL", "Netcat", "Wireshark", "Steghide", "SQL", "Web Security", "Ethical Hacking"];
+---
+<div class="relative overflow-hidden py-7 border-y border-[#ffffff08]">
+  <div class="flex gap-12 w-max animate-scroll">
+    {[...technologies, ...technologies].map((tech, index) => <span aria-hidden={index >= technologies.length ? "true" : "false"} class="text-sm md:text-base text-[var(--white-icon)] whitespace-nowrap">{tech}</span>)}
+  </div>
+</div>
+<style is:global>
+  @keyframes scroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+  .animate-scroll { animation:scroll 34s linear infinite; }
+</style>

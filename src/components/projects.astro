@@ -1,0 +1,37 @@
+---
+const projects = [
+  { title: "TCP Port Scanner", tag: "Python · Network Recon", desc: "Multithreaded TCP scanner with banner grabbing, hostname resolution and TTL-based OS estimation.", repo: "https://github.com/vishwa-war/tcp-port-scanning" },
+  { title: "CEH System Hacking Lab", tag: "Windows · CEH · Lab", desc: "Authorized virtual-lab work covering Windows authentication, SMB/NetBIOS, password auditing, steganography and privacy concepts.", repo: "https://github.com/vishwa-war/system-hacking-lab" },
+  { title: "IATCQ 2026 Bug Hunting", tag: "Web Security · Offensive", desc: "Hands-on web-security writeups covering prototype pollution, SQL injection, authentication bypass and multi-stage attack chains.", repo: "https://github.com/vishwa-war/IATCQ-2026-writeup" },
+  { title: "OverTheWire Bandit", tag: "Linux · CTF · Git Security", desc: "Level 0–33 learning record covering Linux, SSH, enumeration, networking, privilege escalation, automation and Git internals.", repo: "https://github.com/vishwa-war/overthewire-bandit-writeup" },
+];
+---
+<section id="projects" class="py-16 border-t border-[#ffffff10] text-[var(--white)]">
+  <div class="max-w-5xl mx-auto">
+    <p class="eyebrow">Selected work</p>
+    <h2 class="text-4xl md:text-5xl font-semibold mb-8">Projects</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {projects.map((project, index) => (
+        <article class="project-card group">
+          <div class="flex items-start justify-between gap-5">
+            <div><span class="project-index">0{index + 1}</span><h3>{project.title}</h3><p>{project.desc}</p></div>
+            <a href={project.repo} target="_blank" rel="noreferrer" aria-label={`Open ${project.title} on GitHub`} class="repo-link">↗</a>
+          </div>
+          <span class="tag">{project.tag}</span>
+        </article>
+      ))}
+    </div>
+    <a target="_blank" rel="noreferrer" href="https://github.com/vishwa-war" class="w-full flex items-center justify-center gap-2 mt-8 text-[var(--white-icon)] hover:text-white transition border border-[var(--white-icon-tr)] p-3 rounded-full bg-[#1414149c]">Explore GitHub profile ↗</a>
+  </div>
+</section>
+<style is:global>
+  .eyebrow { color:var(--sec); font-size:.8rem; letter-spacing:.16em; text-transform:uppercase; margin-bottom:.6rem; }
+  .project-card { border:1px solid #ffffff10; background:#1414149c; border-radius:22px; padding:22px; min-height:210px; transition:.25s; display:flex; flex-direction:column; justify-content:space-between; }
+  .project-card:hover { border-color:#ffffff25; transform:translateY(-3px); }
+  .project-index { color:var(--sec); font-size:.75rem; font-family:monospace; }
+  .project-card h3 { font-size:1.55rem; font-weight:600; margin:.45rem 0 .6rem; }
+  .project-card p { color:var(--white-icon); line-height:1.65; max-width:38rem; }
+  .repo-link { width:44px; height:44px; border:1px solid #ffffff12; border-radius:14px; display:grid; place-items:center; color:var(--white-icon); flex:none; }
+  .repo-link:hover { color:white; background:#ffffff0b; }
+  .tag { display:inline-flex; width:max-content; margin-top:18px; padding:.35rem .65rem; border:1px solid #ffffff10; border-radius:999px; color:var(--white-icon); font-size:.75rem; }
+</style>
